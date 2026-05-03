@@ -1,0 +1,1379 @@
+{
+  "address": "9fpt7n9eqpYZhHdFjJc7GJV4DZnhG87tYwpE9MBeCafP",
+  "metadata": {
+    "name": "open_mind",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "A simple SOL voting-dapp program"
+  },
+  "instructions": [
+    {
+      "name": "add_course_test",
+      "discriminator": [
+        81,
+        38,
+        177,
+        141,
+        232,
+        51,
+        49,
+        4
+      ],
+      "accounts": [
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "course",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  114,
+                  101,
+                  97,
+                  116,
+                  101,
+                  100,
+                  95,
+                  99,
+                  111,
+                  117,
+                  114,
+                  115,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "signer"
+              },
+              {
+                "kind": "arg",
+                "path": "instructor_created_courses_count"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "instructor_created_courses_count",
+          "type": "u32"
+        },
+        {
+          "name": "test_id",
+          "type": "string"
+        },
+        {
+          "name": "pass_score",
+          "type": "u32"
+        },
+        {
+          "name": "rewards_score",
+          "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "add_user_certificate",
+      "discriminator": [
+        108,
+        146,
+        91,
+        227,
+        164,
+        218,
+        110,
+        228
+      ],
+      "accounts": [
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  117,
+                  115,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "signer"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "course_test_awards",
+      "discriminator": [
+        59,
+        76,
+        217,
+        248,
+        106,
+        72,
+        47,
+        198
+      ],
+      "accounts": [
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "instructor",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  117,
+                  115,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "signer"
+              }
+            ]
+          }
+        },
+        {
+          "name": "user",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  117,
+                  115,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "receiver_key"
+              }
+            ]
+          }
+        },
+        {
+          "name": "course",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  114,
+                  101,
+                  97,
+                  116,
+                  101,
+                  100,
+                  95,
+                  99,
+                  111,
+                  117,
+                  114,
+                  115,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "instructor"
+              },
+              {
+                "kind": "arg",
+                "path": "instructor_created_courses_count"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "receiver_key",
+          "type": "pubkey"
+        },
+        {
+          "name": "instructor_created_courses_count",
+          "type": "u32"
+        },
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "edit_user",
+      "discriminator": [
+        154,
+        159,
+        198,
+        79,
+        53,
+        229,
+        58,
+        80
+      ],
+      "accounts": [
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  117,
+                  115,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "signer"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "user_name",
+          "type": "string"
+        },
+        {
+          "name": "first_name",
+          "type": "string"
+        },
+        {
+          "name": "last_name",
+          "type": "string"
+        },
+        {
+          "name": "description",
+          "type": "string"
+        },
+        {
+          "name": "img_url",
+          "type": "string"
+        },
+        {
+          "name": "enrolled_courses_count",
+          "type": "u32"
+        },
+        {
+          "name": "linked_in_url",
+          "type": "string"
+        },
+        {
+          "name": "instagram_url",
+          "type": "string"
+        },
+        {
+          "name": "twitter_url",
+          "type": "string"
+        },
+        {
+          "name": "instructor",
+          "type": "bool"
+        },
+        {
+          "name": "created_courses_count",
+          "type": "u32"
+        },
+        {
+          "name": "certifications",
+          "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "initialize_certificate",
+      "discriminator": [
+        74,
+        80,
+        209,
+        110,
+        41,
+        167,
+        172,
+        39
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "issuer",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  117,
+                  115,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "payer"
+              }
+            ]
+          }
+        },
+        {
+          "name": "user_cert",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  117,
+                  115,
+                  101,
+                  114,
+                  95,
+                  99,
+                  101,
+                  114,
+                  116,
+                  105,
+                  102,
+                  105,
+                  99,
+                  97,
+                  116,
+                  101
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "recipient"
+              },
+              {
+                "kind": "arg",
+                "path": "recipient_certifications_count"
+              }
+            ]
+          }
+        },
+        {
+          "name": "certificate",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  101,
+                  114,
+                  116,
+                  105,
+                  102,
+                  105,
+                  99,
+                  97,
+                  116,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "payer"
+              },
+              {
+                "kind": "arg",
+                "path": "issued_certificates_count"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "recipient",
+          "type": "pubkey"
+        },
+        {
+          "name": "recipient_certifications_count",
+          "type": "u32"
+        },
+        {
+          "name": "issued_certificates_count",
+          "type": "u32"
+        },
+        {
+          "name": "certificate_url",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "initialize_course",
+      "discriminator": [
+        229,
+        46,
+        169,
+        255,
+        188,
+        154,
+        164,
+        190
+      ],
+      "accounts": [
+        {
+          "name": "instructor",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  117,
+                  115,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "instructor"
+              }
+            ]
+          }
+        },
+        {
+          "name": "course",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  114,
+                  101,
+                  97,
+                  116,
+                  101,
+                  100,
+                  95,
+                  99,
+                  111,
+                  117,
+                  114,
+                  115,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "instructor"
+              },
+              {
+                "kind": "arg",
+                "path": "user_created_courses_count"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "user_created_courses_count",
+          "type": "u32"
+        },
+        {
+          "name": "instructor_name",
+          "type": "string"
+        },
+        {
+          "name": "course_name",
+          "type": "string"
+        },
+        {
+          "name": "course_description",
+          "type": "string"
+        },
+        {
+          "name": "course_what_you_will_learn",
+          "type": "string"
+        },
+        {
+          "name": "course_amount",
+          "type": "u32"
+        },
+        {
+          "name": "course_index",
+          "type": "u32"
+        },
+        {
+          "name": "subscriber_count",
+          "type": "u32"
+        },
+        {
+          "name": "material_count",
+          "type": "u32"
+        },
+        {
+          "name": "star_review_total",
+          "type": "u32"
+        },
+        {
+          "name": "star_review_count",
+          "type": "u32"
+        },
+        {
+          "name": "course_hours",
+          "type": "u32"
+        },
+        {
+          "name": "course_levels",
+          "type": "string"
+        },
+        {
+          "name": "course_skills",
+          "type": "string"
+        },
+        {
+          "name": "test_id",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "initialize_user",
+      "discriminator": [
+        111,
+        17,
+        185,
+        250,
+        60,
+        122,
+        38,
+        254
+      ],
+      "accounts": [
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  117,
+                  115,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "signer"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "user_name",
+          "type": "string"
+        },
+        {
+          "name": "first_name",
+          "type": "string"
+        },
+        {
+          "name": "last_name",
+          "type": "string"
+        },
+        {
+          "name": "description",
+          "type": "string"
+        },
+        {
+          "name": "img_url",
+          "type": "string"
+        },
+        {
+          "name": "enrolled_courses_count",
+          "type": "u32"
+        },
+        {
+          "name": "linkedin_url",
+          "type": "string"
+        },
+        {
+          "name": "instagram_url",
+          "type": "string"
+        },
+        {
+          "name": "twitter_url",
+          "type": "string"
+        },
+        {
+          "name": "instructor",
+          "type": "bool"
+        },
+        {
+          "name": "created_courses_count",
+          "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "initialize_user_course",
+      "discriminator": [
+        189,
+        87,
+        145,
+        157,
+        10,
+        2,
+        98,
+        166
+      ],
+      "accounts": [
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  117,
+                  115,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "signer"
+              }
+            ]
+          }
+        },
+        {
+          "name": "user_course",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  110,
+                  114,
+                  111,
+                  108,
+                  108,
+                  101,
+                  100,
+                  95,
+                  99,
+                  111,
+                  117,
+                  114,
+                  115,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "signer"
+              },
+              {
+                "kind": "arg",
+                "path": "user_enrolled_courses_index"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "user_enrolled_course_index",
+          "type": "u32"
+        },
+        {
+          "name": "instructor",
+          "type": "pubkey"
+        },
+        {
+          "name": "instructor_course_index",
+          "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "revoke_certificate",
+      "discriminator": [
+        236,
+        5,
+        130,
+        119,
+        9,
+        164,
+        130,
+        122
+      ],
+      "accounts": [
+        {
+          "name": "issuer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "certificate",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  101,
+                  114,
+                  116,
+                  105,
+                  102,
+                  105,
+                  99,
+                  97,
+                  116,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "issuer"
+              },
+              {
+                "kind": "arg",
+                "path": "recipient"
+              },
+              {
+                "kind": "arg",
+                "path": "issued_certificates_count"
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "recipient",
+          "type": "pubkey"
+        },
+        {
+          "name": "issued_certificates_count",
+          "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "submit_material",
+      "discriminator": [
+        122,
+        31,
+        203,
+        196,
+        50,
+        30,
+        41,
+        57
+      ],
+      "accounts": [
+        {
+          "name": "instructor",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "course",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  114,
+                  101,
+                  97,
+                  116,
+                  101,
+                  100,
+                  95,
+                  99,
+                  111,
+                  117,
+                  114,
+                  115,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "instructor"
+              },
+              {
+                "kind": "arg",
+                "path": "course_index"
+              }
+            ]
+          }
+        },
+        {
+          "name": "course_material",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  117,
+                  114,
+                  115,
+                  101,
+                  95,
+                  109,
+                  97,
+                  116,
+                  101,
+                  114,
+                  105,
+                  97,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "instructor"
+              },
+              {
+                "kind": "arg",
+                "path": "course_index"
+              },
+              {
+                "kind": "arg",
+                "path": "material_count"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "course_index",
+          "type": "u32"
+        },
+        {
+          "name": "material_count",
+          "type": "u32"
+        },
+        {
+          "name": "course_name",
+          "type": "string"
+        },
+        {
+          "name": "title",
+          "type": "string"
+        },
+        {
+          "name": "file_uri",
+          "type": "string"
+        },
+        {
+          "name": "chapter",
+          "type": "string"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Certificate",
+      "discriminator": [
+        202,
+        229,
+        222,
+        220,
+        116,
+        20,
+        74,
+        67
+      ]
+    },
+    {
+      "name": "Course",
+      "discriminator": [
+        206,
+        6,
+        78,
+        228,
+        163,
+        138,
+        241,
+        106
+      ]
+    },
+    {
+      "name": "CourseMaterial",
+      "discriminator": [
+        152,
+        107,
+        83,
+        66,
+        80,
+        19,
+        53,
+        155
+      ]
+    },
+    {
+      "name": "User",
+      "discriminator": [
+        159,
+        117,
+        95,
+        227,
+        239,
+        151,
+        58,
+        236
+      ]
+    },
+    {
+      "name": "UserCertificate",
+      "discriminator": [
+        89,
+        177,
+        105,
+        37,
+        20,
+        24,
+        81,
+        214
+      ]
+    },
+    {
+      "name": "UserCourse",
+      "discriminator": [
+        151,
+        49,
+        127,
+        196,
+        13,
+        170,
+        179,
+        188
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "MathOverflow",
+      "msg": "Math operation overflowed."
+    },
+    {
+      "code": 6001,
+      "name": "InvalidCertificateStatus",
+      "msg": "Invalid milestone status for this operation."
+    },
+    {
+      "code": 6002,
+      "name": "StringTooLong",
+      "msg": "Certificate is not verified."
+    },
+    {
+      "code": 6003,
+      "name": "InsufficientVaultFunds",
+      "msg": "String contains more than required number of characters."
+    }
+  ],
+  "types": [
+    {
+      "name": "Certificate",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "issuer",
+            "type": "pubkey"
+          },
+          {
+            "name": "recipient",
+            "type": "pubkey"
+          },
+          {
+            "name": "tracking_id",
+            "type": "u32"
+          },
+          {
+            "name": "certificate_url",
+            "type": "string"
+          },
+          {
+            "name": "issued_at",
+            "type": "u64"
+          },
+          {
+            "name": "revoked",
+            "type": "bool"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Course",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "instructor",
+            "type": "pubkey"
+          },
+          {
+            "name": "course_index",
+            "type": "u32"
+          },
+          {
+            "name": "instructor_name",
+            "type": "string"
+          },
+          {
+            "name": "course_name",
+            "type": "string"
+          },
+          {
+            "name": "course_description",
+            "type": "string"
+          },
+          {
+            "name": "course_what_you_will_learn",
+            "type": "string"
+          },
+          {
+            "name": "course_amount",
+            "type": "u32"
+          },
+          {
+            "name": "material_count",
+            "type": "u32"
+          },
+          {
+            "name": "subscriber_count",
+            "type": "u32"
+          },
+          {
+            "name": "star_review_total",
+            "type": "u32"
+          },
+          {
+            "name": "star_review_count",
+            "type": "u32"
+          },
+          {
+            "name": "course_hours",
+            "type": "u32"
+          },
+          {
+            "name": "course_levels",
+            "type": "string"
+          },
+          {
+            "name": "course_skills",
+            "type": "string"
+          },
+          {
+            "name": "test_id",
+            "type": "string"
+          },
+          {
+            "name": "rewards_shared_at",
+            "type": "u64"
+          },
+          {
+            "name": "pass_score",
+            "type": "u32"
+          },
+          {
+            "name": "rewards_score",
+            "type": "u32"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CourseMaterial",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "instructor",
+            "type": "pubkey"
+          },
+          {
+            "name": "course_name",
+            "type": "string"
+          },
+          {
+            "name": "material_title",
+            "type": "string"
+          },
+          {
+            "name": "chapter",
+            "type": "string"
+          },
+          {
+            "name": "file_uri",
+            "type": "string"
+          },
+          {
+            "name": "index",
+            "type": "u32"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "User",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "user_key",
+            "type": "pubkey"
+          },
+          {
+            "name": "user_name",
+            "type": "string"
+          },
+          {
+            "name": "first_name",
+            "type": "string"
+          },
+          {
+            "name": "last_name",
+            "type": "string"
+          },
+          {
+            "name": "description",
+            "type": "string"
+          },
+          {
+            "name": "img_url",
+            "type": "string"
+          },
+          {
+            "name": "enrolled_courses_count",
+            "type": "u32"
+          },
+          {
+            "name": "created_courses_count",
+            "type": "u32"
+          },
+          {
+            "name": "certifications",
+            "type": "u32"
+          },
+          {
+            "name": "issued_certificates_count",
+            "type": "u32"
+          },
+          {
+            "name": "linkedin_url",
+            "type": "string"
+          },
+          {
+            "name": "instagram_url",
+            "type": "string"
+          },
+          {
+            "name": "twitter_url",
+            "type": "string"
+          },
+          {
+            "name": "instructor",
+            "type": "bool"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "UserCertificate",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "issuer",
+            "type": "pubkey"
+          },
+          {
+            "name": "recipient",
+            "type": "pubkey"
+          },
+          {
+            "name": "tracking_id",
+            "type": "u32"
+          },
+          {
+            "name": "index",
+            "type": "u32"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "UserCourse",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "user",
+            "type": "pubkey"
+          },
+          {
+            "name": "instructor",
+            "type": "pubkey"
+          },
+          {
+            "name": "instructor_course_index",
+            "type": "u32"
+          },
+          {
+            "name": "user_course_index",
+            "type": "u32"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    }
+  ]
+}
