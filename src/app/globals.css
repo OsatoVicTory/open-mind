@@ -531,3 +531,7 @@ button:disabled {
       padding: 12px 20px;
   }
 }
+
+@keyframes shimmer {
+    100% { transform: translateX(100%); }
+}

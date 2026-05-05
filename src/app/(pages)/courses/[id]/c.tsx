@@ -23,13 +23,16 @@ const CourseP = ({ id } : { id: string }) => {
   const [openSection, setOpenSection] = useState<number | null>(0);
   const [loading, setLoading] = useState(true);
   const [certifying, setCertifying] = useState(false);
+  const [enrolling, setEnrolling] = useState(false);
   const [error, setError] = useState(false);
   const { 
     getProgram, userPublicKey, getProvider, 
     getUserPDA, getCourseMaterialPDA, getInstructorCreatedCoursePDA, 
-    getUserCertificatePDA, getCertificatePDA 
+    getUserCertificatePDA, getCertificatePDA, getUserEnrolledCoursesPDA 
   } = useOpenMind();
   const [course, setCourse] = useState<any>({});
+  const [instructor, setInstructor] = useState<string>("");
+  const [courseIndex, setCourseIndex] = useState(0);
   const [chapters, setChapters] = useState<any[]>([]);
 
   const curriculum = [
@@ -49,7 +52,9 @@ const CourseP = ({ id } : { id: string }) => {
         }
 
         const [instructorAddy, cI] = id.split("_x_");
+        setInstructor(instructorAddy);
         const course_index = Number(cI);
+        setCourseIndex(course_index);
         console.log("ccc", instructorAddy, cI);
 
         // const userPDA = getUserPDA();
@@ -139,13 +144,14 @@ const CourseP = ({ id } : { id: string }) => {
 
         const matTx = await program.methods
           .initializeCertificate(
-            receipientKey,
+            new PublicKey(instructor),
             cert_index,
             issuer_cert_index,
+            courseIndex,
             "none just vibez",
           )
           .accounts({
-            payer: userPublicKey,
+            claimer: userPublicKey,
             issuer: issuerPDA,
             userCert: userCertPda,
             certificate: certificatePda,
@@ -171,6 +177,50 @@ const CourseP = ({ id } : { id: string }) => {
       } catch(err) {
         console.log(err);
         setCertifying(false);
+      }
+    };
+
+    const enrollCourse = async () => {
+      if(enrolling) return;
+      setEnrolling(true);
+      try {
+              
+        const program = getProgram();
+        if (!program || !userPublicKey) {
+            throw new Error("Wallet not connected or Program failed to load.");
+            return;
+        }
+
+        const provider = getProvider();
+
+        const userPDA = getUserPDA();
+        const user = await (program.account as any).user.fetch(userPDA);
+        console.log("user", user, user.createdCoursesCount, userPublicKey);
+        console.log("u", userPublicKey.toString(), userPublicKey.toString() === instructor, courseIndex);
+        const enrolled_course_count = user.enrolledCoursesCount;
+
+        const userCreatedPDA = getInstructorCreatedCoursePDA(instructor, courseIndex);
+        const userEnrolledCoursePDA = getUserEnrolledCoursesPDA(enrolled_course_count);
+
+        const _course = await (program.account as any).course.fetch(userCreatedPDA);
+        console.log("course", _course);
+        
+        const tx = await program.methods.initializeUserCourse(
+          enrolled_course_count,
+          new PublicKey(instructor), // use instructor_name as address can be gotten from instructor field
+          courseIndex
+        ).accounts({
+            signer: userPublicKey,
+            user: userPDA,
+            course: userCreatedPDA,
+            userCourse: userEnrolledCoursePDA,
+            systemProgram: SystemProgram.programId,
+        } as any).rpc();
+
+        setEnrolling(false);
+      } catch (err) {
+        console.log("enroll error", err);
+        setEnrolling(false);
       }
     }
 
@@ -229,7 +279,7 @@ const CourseP = ({ id } : { id: string }) => {
                 />
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
                   <MdPlayCircleOutline className="w-16 h-16 text-white group-hover:scale-110 transition-transform" />
-                  <span className="text-white font-bold mt-2">Preview this course</span>
+                  <span className="text-white font-bold mt-2">Video course</span>
                 </div>
               </div>
 
@@ -240,7 +290,8 @@ const CourseP = ({ id } : { id: string }) => {
                 </div>
 
                 {course.instructor !== userPublicKey?.toString() && <div className="space-y-3">
-                  <button className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-xl transition-all shadow-lg shadow-indigo-100">
+                  <button className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-xl transition-all shadow-lg shadow-indigo-100"
+                  onClick={enrollCourse}>
                     Enroll Now
                   </button>
                 </div>}

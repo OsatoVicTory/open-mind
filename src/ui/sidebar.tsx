@@ -8,6 +8,7 @@ import { GrMoney } from "react-icons/gr";
 import { MdManageAccounts } from "react-icons/md";
 import { RiDashboardLine, RiP2pLine, RiRefund2Line } from "react-icons/ri";
 import { GiHamburgerMenu } from "react-icons/gi";
+import { IoIosCreate } from "react-icons/io";
 
 export default function SideNavbar({ collapse, setCollapse }: { collapse: boolean, setCollapse: () => void }) {
 
@@ -15,7 +16,7 @@ export default function SideNavbar({ collapse, setCollapse }: { collapse: boolea
         { name: "Home", href: "/dashboard", icon: RiDashboardLine },
         { name: "Courses", href: "/courses", icon: RiP2pLine },
         { name: "Wallet", href: "/wallet", icon: RiRefund2Line },
-        { name: "Create", href: "/create", icon: RiRefund2Line },
+        { name: "Create", href: "/create", icon: IoIosCreate },
         { name: "Account", href: "/account", icon: MdManageAccounts }
     ];
     const [route, setRoute] = useState(0);

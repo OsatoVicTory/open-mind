@@ -39,7 +39,7 @@ export default function Home() {
   };
 
   useEffect(() => {
-    // if(address) router.push("/dashboard");
+    if(address) router.push("/dashboard");
   }, [address]);
 
   const handleAirdrop = async () => {

@@ -15,13 +15,15 @@ import { AccountCertificates, AccountCourses } from "@/components/account";
 import { AccountSettings } from "@/components/account/settings";
 import { useOpenMind } from "@/hooks/useOpenMind";
 import { useReadContract } from "thirdweb/react";
+import { PiCertificate } from "react-icons/pi";
+import CertificateGenerator from "@/components/account/certificate";
 
 export default function AccountPage() {
 
     const pageSize = 20;
     const { 
         getProgram, userPublicKey, getProvider, getUserPDA, getUserEnrolledCoursesPDA, 
-        getCreatedCoursePDA, getUserCertificatePDA, getCertificatePDA 
+        getCreatedCoursePDA, getUserCertificatePDA, getCertificatePDA, getInstructorCreatedCoursePDA 
     } = useOpenMind();
     const [route, setRoute] = useState("Created Courses");
     const lstId = useRef<string>("");
@@ -53,7 +55,7 @@ export default function AccountPage() {
     const routes = [
         {icon: RiApps2AddFill, name: "Created Courses"},
         {icon: RiAccountPinBoxLine, name: "Enrolled Courses"},
-        {icon: RiAccountPinBoxLine, name: "Certificates"},
+        {icon: PiCertificate, name: "Certificates"},
         {icon: SlSettings, name: "Settings"},
     ];
 
@@ -74,7 +76,7 @@ export default function AccountPage() {
             console.log(user);
             const enrolled_ = [];
             const created_ = [];
-            for(let course_index = 0; course_index < user.createdCoursesCount; course_index+=2) {
+            for(let course_index = 0; course_index < user.createdCoursesCount; course_index++) {
                 const userCreated = getCreatedCoursePDA(course_index);
                 const course = await (program.account as any).course.fetch(userCreated);
                 created_.push(course);
@@ -83,7 +85,10 @@ export default function AccountPage() {
             
             for(let course_index = 0; course_index < user.enrolledCoursesCount; course_index++) {
                 const userEnrolled = getUserEnrolledCoursesPDA(course_index);
-                const course = await (program.account as any).course.fetch(userEnrolled);
+                const course_ = await (program.account as any).userCourse.fetch(userEnrolled);
+                // console.log("enrolled_course", course_);
+                const userCreated = getInstructorCreatedCoursePDA(course_.instructor, course_.instructorCourseIndex);
+                const course = await (program.account as any).course.fetch(userCreated);
                 enrolled_.push(course);
             }
 
@@ -93,8 +98,9 @@ export default function AccountPage() {
             for(let course_index = 0; course_index < user.certifications; course_index++) {
                 const userEnrolled = getUserCertificatePDA(userPublicKey, course_index);
                 const userCert = await (program.account as any).userCertificate.fetch(userEnrolled);
+                console.log("userCert", course_index, userCert);
                 const certPda = getCertificatePDA(userCert.issuer.toString(), userCert.trackingId);
-                const cert = await (program.account as any).userCertificate.fetch(certPda);
+                const cert = await (program.account as any).certificate.fetch(certPda);
                 certificates_.push(cert);
             }
 
@@ -211,6 +217,8 @@ export default function AccountPage() {
                         )
                     )
                 }
+
+                <CertificateGenerator />
             </main>
 
         </div>

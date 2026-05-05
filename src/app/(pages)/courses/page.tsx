@@ -1,6 +1,6 @@
 "use client";
 
-import { FormatTokenPrice, Skeleton, Spinner } from "@/components/ui/loading";
+import { FormatTokenPrice, PageLoader, Skeleton, Spinner } from "@/components/ui/loading";
 import useScrollThrottle from "@/hooks/useScroll";
 import { LoadingType } from "@/types";
 import { formatValue } from "@/utils/helpers";
@@ -25,48 +25,87 @@ export default function CoursesPage() {
     // const [loading, setLoading] = useState<LoadingType>({ loading: true, error: false, loaded: false, state: 0 });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(false);
-    const [scrollChange, setScrollChange] = useState(0);
-    const lstId = useRef<string>("");
-    const filtersRef = useRef<any>({ cap: 0, cat: [0] });
-    const loadedRef = useRef(false);
-    const stopScrollFetchingRef = useRef(false);
+    const [search, setSearch] = useState("");
 
     const [showFilter, setShowFilter] = useState(false);
 
-    const [courses, setCourses] = useState<any[]>([]); /*Array(10).fill(0). map((_, i) => {
-        const mul = (i && i%3 === 0) ? -1.0 : 1.0;
-        const [name, price, total_supply, img, public_id, creator_account_id, meta_data, one_day_volume] = [
-            `Agrow-${i}`, 0.00102, 900000, "", "", "", "", 10000
-        ];
-        const [one_hr, one_day, thirty_days] = [
-            {change: 3.21 * mul }, { change: 41.87 * mul }, { change: 125.89 * mul }
-        ];
-        return { 
-            _id: i, img: logo, name: "100 Days of Code: The Complete python bootcamp", 
-            instructor: "Dr Angela Yen - Chief Instructor", price: "$35"
-        };
-    }); */
+    const [courses, setCourses] = useState<any[]>([]); 
+    const [displayedCourses, setDisplayedCourses] = useState<any[]>([]); 
 
     const [topFilter, setTopFilter] = useState("Trending");
     const [showDropdown, setShowDropdown] = useState(false);
     const [showSkilDropdown, setShowSkilDropdown] = useState(false);
     const skillInputRef = useRef<HTMLInputElement | null>(null);
 
-    const [filters, setFilters] = useState({ prices: 0, duration: [0], levels: [0], skills: [0] });
-    const prices = ["< $10", "$10 - $30", "$30 - $50", "$50 - $100", "$100 - $150", "$150 - $200", "$200+"];
-    const duration = ["< 10 Hrs", "10 - 30 Hrs", "30 - 50 Hrs", "50 - 100 Hrs", "100+ Hrs"];
-    const levels = ["Beginner", "Intermediate", "Expert"];
-    const skills = ["ALL", "Software development", "Agriculture", "Real Eloading Mgt.", "Digital Arts", "Start ups", "Music", "Agriculture", "Agriculture", "Agriculture", "Agriculture"];
+    const [filters, setFilters] = useState({ prices: [0], duration: [0], levels: [0], skills: [0] });
+    const prices = ["<= $10", "$11 - $30", "$31 - $50", "$51 - $100", "$101 - $150", "$151 - $200", "$200+"];
+    const pricesFn = [
+      (val: number) => val < 11,
+      (val: number) => val < 31 && val > 10,
+      (val: number) => val < 51 && val > 30,
+      (val: number) => val < 101 && val > 50,
+      (val: number) => val < 151 && val > 100,
+      (val: number) => val < 201 && val > 150,
+      (val: number) => val > 200,
+    ];
 
-    const handleToggleSkill = (s_idx: number) => {
-        const f = [];
+    const duration = ["<= 10 Hrs", "11 - 30 Hrs", "31 - 50 Hrs", "51 - 100 Hrs", "100+ Hrs"];
+    const durationFn = [
+      (val: number) => val < 11,
+      (val: number) => val < 31 && val > 10,
+      (val: number) => val < 51 && val > 30,
+      (val: number) => val < 101 && val > 50,
+      (val: number) => val > 100,
+    ];
+    const levels = ["Beginner", "Intermediate", "Expert"];
+    const skills = ["Software development", "Agriculture", "Real Eloading Mgt.", "Digital Arts", "Start ups", "Music", "Agriculture", "Agriculture", "Agriculture", "Agriculture"];
+
+
+    const updateFilter = (key: string, index: number) => {
+      const prev: any = { ...filters };
+      if(!prev[key].includes(index)) prev[key].push(index);
+      else prev[key] = prev[key].filter((p: any) => p !== index);
+      setFilters(prev);
+    };
+
+    const applyFilter = () => {
+      const f: any = { 
+        prices: {key: "courseAmount", fn: pricesFn}, 
+        duration: {key: "courseHours", fn: durationFn}, 
+        levels: {key: "courseLevels", fn: null}, 
+        skills: {key: "courseSkills", fn: null}, 
+      };
+      const filterKeys = Object.keys(f);
+      const filtersClone: any = { ...filters };
+
+      const filteredCourses = courses.filter((course) => {
+        let cnt = 0;
         let ok = false;
-        for(let fi of filters.skills) {
-            if(fi === s_idx) ok = true;
-            else f.push(fi);
+
+        for(const filterKey of filterKeys) {
+          const { key, fn } = f[filterKey];
+          const filters_: any = filtersClone[filterKey];
+
+          cnt += filters_.length;
+
+          let _ok = false;
+
+          for(const filterIndex of filters_) {
+            if(!fn) {
+              if(filterKey === "skills") _ok = course[key] === skills[filterIndex];
+              else _ok = course[key] === levels[filterIndex];
+            } else {
+              _ok = fn[filterIndex](course[key]);
+            }
+
+            if(_ok) return _ok;
+          }
         }
-        if(!ok) f.push(s_idx);
-        setFilters({ ...filters, skills: f });
+
+        return ok || cnt < 1;
+      });
+      
+      setDisplayedCourses(filteredCourses);
     }
 
     const fetchAllCourses = async () => {
@@ -85,6 +124,7 @@ export default function CoursesPage() {
         });
         console.log("c", courses_);
         setCourses(courses_);
+        setDisplayedCourses(courses_);
         setLoading(false);
       } catch (err) {
         setError(true);
@@ -95,6 +135,12 @@ export default function CoursesPage() {
     useEffect(() => {
       fetchAllCourses();
     }, []);
+
+    useEffect(() => {
+      const srch = search.toLowerCase();
+      const res = courses.filter(course => course.courseName.toLowerCase().startsWith(srch));
+      setDisplayedCourses(res);
+    }, [search]);
 
     return (
         <div className="flex w-full min-h-screen bg-white">
@@ -125,11 +171,12 @@ export default function CoursesPage() {
         <section>
           <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">Course Prices</h3>
           <div className="flex flex-wrap gap-2">
-            {["All", ...prices].map((price, idx) => (
+            {prices.map((price, idx) => (
               <button
                 key={idx}
+                onClick={() => setFilters({ ...filters, prices: [idx] })}
                 className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all
-                  ${filters.prices === idx 
+                  ${filters.prices[0] === idx 
                     ? "bg-indigo-600 text-white shadow-md shadow-indigo-100" 
                     : "bg-slate-100/65 text-slate-600 hover:bg-slate-100"
                   }`}
@@ -144,10 +191,11 @@ export default function CoursesPage() {
         <section>
           <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">Course Level</h3>
           <div className="flex flex-wrap gap-2">
-            {["All", ...levels].map((lev, idx) => (
+            {levels.map((lev, idx) => (
               <button
                 key={idx}
-                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all
+                onClick={() => updateFilter("levels", idx)}
+                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all cursor-pointer
                   ${filters.levels.includes(idx) 
                     ? "bg-indigo-600 text-white shadow-md" 
                     : "bg-slate-100/65 text-slate-600 hover:bg-slate-100"
@@ -182,8 +230,9 @@ export default function CoursesPage() {
                         <button 
                             key={`skill_id_${skill_idx}`}
                             type="button"
-                            onClick={() => handleToggleSkill(skill_idx)} // Logic to add/remove from array
-                            className={`w-full text-left px-4 py-3 text-sm flex items-center justify-between transition-all border-b last:border-0 border-slate-50 group
+                            // onClick={() => handleToggleSkill(skill_idx)} // Logic to add/remove from array
+                            onClick={() => updateFilter("skills", skill_idx)}
+                            className={`w-full text-left px-4 py-3 text-sm flex items-center justify-between transition-all border-b last:border-0 border-slate-50 group cursor-pointer
                             ${isSelected ? "bg-indigo-50/60 text-indigo-700" : "hover:bg-slate-50 text-slate-600"}
                             `}
                         >
@@ -216,12 +265,13 @@ export default function CoursesPage() {
 
         {/* Course Levels */}
         <section>
-          <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">Course Level</h3>
+          <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">Course duration</h3>
           <div className="flex flex-wrap gap-2">
-            {["All", ...duration].map((lev, idx) => (
+            {duration.map((lev, idx) => (
               <button
                 key={idx}
-                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all
+                onClick={() => updateFilter("duration", idx)}
+                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all cursor-pointer
                   ${filters.duration.includes(idx) 
                     ? "bg-indigo-600 text-white shadow-md" 
                     : "bg-slate-100/65 text-slate-600 hover:bg-slate-100"
@@ -236,7 +286,8 @@ export default function CoursesPage() {
 
       {/* Apply Footer (Sticky) */}
       <div className="p-5 border-t border-t-[var(--border)]/15 bg-slate-50/50">
-        <button className="w-full flex items-center justify-center gap-2 bg-slate-900 hover:bg-indigo-600 text-white font-bold py-3 px-6 rounded-xl transition-all active:scale-95">
+        <button className="w-full flex items-center justify-center gap-2 bg-slate-900 hover:bg-indigo-600 text-white font-bold py-3 px-6 rounded-xl transition-all active:scale-95"
+        onClick={applyFilter}>
           <BiEditAlt className="w-5 h-5" />
           Apply Filters
         </button>
@@ -247,7 +298,7 @@ export default function CoursesPage() {
   {/* Main Content */}
   <main className={`flex-1 min-w-0 ${showFilter ? "max-md:hidden" : ""}`}>
     {/* Sub-header */}
-    <header className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-slate-100 px-6 py-4 flex items-center justify-between">
+    <header className="sticky gap-x-6 top-0 z-20 bg-white/80 backdrop-blur-md border-b border-slate-100 px-6 py-4 flex items-center justify-between">
       <div className="flex items-center gap-4">
         <button 
           onClick={() => setShowFilter(true)}
@@ -258,36 +309,52 @@ export default function CoursesPage() {
         <h2 className="text-2xl font-extrabold text-slate-900">Courses</h2>
       </div>
 
-      <div className="flex gap-2">
-        {[
-          { name: 'Trending', icon: MdWhatshot },
-          { name: 'New', icon: MdOutlineWbTwilight },
-          { name: 'Top', icon: RiMedalLine }
-        ].map((btn) => (
-          <button 
-            key={btn.name}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all
-              ${topFilter === btn.name 
-                ? "bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200" 
-                : "text-slate-500 hover:bg-slate-50"
-              }`}
-          onClick={() => setTopFilter(btn.name)}
-          >
-            <btn.icon className="w-4 h-4" />
-            <span className="hidden sm:inline">{btn.name}</span>
-          </button>
-        ))}
+      <div className="flex grow">
+        <input 
+          type="text" 
+          placeholder="Search Course name"
+          className="w-full text-black/85 px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white outline-none transition-all"
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </div>
+
+      <div className="flex justify-between items-center">
+        {/* <div className="flex gap-2">
+          {[
+            { name: 'Trending', icon: MdWhatshot },
+            { name: 'New', icon: MdOutlineWbTwilight },
+            // { name: 'Top', icon: RiMedalLine }
+          ].map((btn) => (
+            <button 
+              key={btn.name}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all cursor-pointer
+                ${topFilter === btn.name 
+                  ? "bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200" 
+                  : "text-slate-500 hover:bg-slate-50"
+                }`}
+            onClick={() => setTopFilter(btn.name)}
+            >
+              <btn.icon className="w-4 h-4" />
+              <span className="hidden sm:inline">{btn.name}</span>
+            </button>
+          ))}
+        </div> */}
+
+        <Link href={"/create"} className="w-full flex items-center justify-center gap-2 bg-slate-900 hover:bg-indigo-600 text-white font-bold py-2 text-sm px-3 rounded-xl transition-all active:scale-95">
+          <BiEditAlt className="w-4 h-4" />
+          Create Course
+        </Link>
       </div>
     </header>
 
     {/* Course Grid */}
     <div className="p-6">
       {
-        loading ?
-        <div className="text-md text-black">Loading...</div>
+        !loading ?
+        <PageLoader />
         :
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {courses.map((course, cId) => (
+        {displayedCourses.map((course, cId) => (
           <Link 
             href={`/courses/${course.instructor}_x_${course.courseIndex}`} 
             key={cId}
@@ -300,8 +367,8 @@ export default function CoursesPage() {
                 fill
                 className="object-cover group-hover:scale-105 transition-transform duration-500"
               />
-              <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg shadow-sm">
-                 <span className="text-xs font-bold text-indigo-600">{course.courseAmount}</span>
+              <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-0 rounded-lg shadow-sm">
+                 <span className="text-xs font-bold text-indigo-600">{course.courseAmount}<span className="text-[10px] font-medium text-indigo-700"> SOL</span></span>
               </div>
             </div>
             

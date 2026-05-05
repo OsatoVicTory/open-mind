@@ -61,8 +61,10 @@ export const AccountSettings = ({ headerName, setShowFilter }: { headerName: str
             console.log(d);
 
             // 2. Initialize Campaign
-            await program.methods.editUser(
-                ...editUserRef.map(_r => {
+            // await program.methods.editUser(
+            //     ...editUserRef.map(_r => {
+            await program.methods.initializeUser(
+                ...ref.map(_r => {
                     if(d[_r]) return d[_r];
                     else return 0;
                 })

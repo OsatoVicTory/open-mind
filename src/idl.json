@@ -1,5 +1,5 @@
 {
-  "address": "9fpt7n9eqpYZhHdFjJc7GJV4DZnhG87tYwpE9MBeCafP",
+  "address": "9MwzURoPCAnD8q8zthcD1ndXKnaf7PBvkTtv31qApu67",
   "metadata": {
     "name": "open_mind",
     "version": "0.1.0",
@@ -455,7 +455,7 @@
       ],
       "args": [
         {
-          "name": "recipient",
+          "name": "issuer_key",
           "type": "pubkey"
         },
         {
@@ -464,6 +464,10 @@
         },
         {
           "name": "issued_certificates_count",
+          "type": "u32"
+        },
+        {
+          "name": "course_index",
           "type": "u32"
         },
         {
@@ -740,6 +744,41 @@
               {
                 "kind": "account",
                 "path": "signer"
+              }
+            ]
+          }
+        },
+        {
+          "name": "course",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  114,
+                  101,
+                  97,
+                  116,
+                  101,
+                  100,
+                  95,
+                  99,
+                  111,
+                  117,
+                  114,
+                  115,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "instructor"
+              },
+              {
+                "kind": "arg",
+                "path": "user_created_courses_count"
               }
             ]
           }
@@ -1111,6 +1150,10 @@
           {
             "name": "tracking_id",
             "type": "u32"
+          },
+          {
+            "name": "course_index",
+            "type": "string"
           },
           {
             "name": "certificate_url",

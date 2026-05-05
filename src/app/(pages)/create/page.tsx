@@ -19,7 +19,6 @@ import {
   MdCheckCircleOutline,
   MdUpload
 } from 'react-icons/md';
-import { SOLANA_ERROR__TRANSACTION__FAILED_TO_DECOMPILE_ADDRESS_LOOKUP_TABLE_CONTENTS_MISSING } from '@solana/kit';
 
 const CreateCourse = () => {
   const [step, setStep] = useState(1);
