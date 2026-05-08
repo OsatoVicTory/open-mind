@@ -19,12 +19,12 @@ export const getTime = (time: number) => {
     return `${Z(hrs)}:${Z(date.getMinutes())} ${meridian}`;
 };
 
-export const imageToBase64 = async (image: File) => {
+export const imageToBase64 = async (image: File) : Promise<string> => {
     return new Promise((resolve) => {
         const reader = new FileReader();
         reader.readAsDataURL(image);
         reader.onload = () => {
-            resolve(reader.result);
+            resolve(reader.result as string);
         };
     });
 };
@@ -95,3 +95,35 @@ export const uploadToIpfs = async (file: File | File[]) => {
     }
 
 };
+
+
+
+export const formatDuration = (seconds: number) => {
+  const date = new Date(0);
+  date.setSeconds(seconds);
+  // Returns MM:SS or HH:MM:SS
+  return date.toISOString().substring(11, 19).replace(/^00:/, '');
+};
+
+export const getVideoDuration = (src: string) : Promise<number | string> => {
+  return new Promise((resolve, reject) => {
+    const video = document.createElement('video');
+    
+    // Ensure we don't actually play the video or download the whole thing
+    video.preload = 'metadata';
+
+    video.onloadedmetadata = () => {
+      // Clean up the object to free memory
+      window.URL.revokeObjectURL(video.src);
+      resolve(video.duration);
+    };
+
+    video.onerror = () => {
+      resolve("Failed to load video metadata.");
+    };
+
+    video.src = src;
+  });
+};
+
+//

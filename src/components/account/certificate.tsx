@@ -39,14 +39,9 @@ export default function CertificateGenerator() {
   };
 
   return (
-    <div className="flex flex-col items-center p-8 bg-gray-900 min-h-screen text-white">
+    <div className="flex flex-col items-center p-8 bg-gray-900 min-h-fit text-white">
       {/* Control Panel */}
       <div className="mb-8 space-x-4">
-        <input
-          className="p-2 text-black rounded"
-          placeholder="Recipient Name"
-          onChange={(e) => setData({ ...data, name: e.target.value })}
-        />
         <button
           onClick={downloadCertificate}
           className="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg font-bold transition"
@@ -58,7 +53,7 @@ export default function CertificateGenerator() {
       {/* The Certificate DOM Element */}
       <div
         ref={certificateRef}
-        className="relative w-full max-w-[800px] aspect-[1.314/1] bg-white text-gray-800 p-12 flex flex-col items-center justify-between border-[16px] border-double border-gold-500 shadow-2xl overflow-hidden"
+        className="relative w-full max-w-[800px] aspect-[1.314/1] bg-white text-gray-800 py-12 flex flex-col items-center justify-between border-[16px] border-double border-gold-500 shadow-2xl overflow-hidden"
         style={{ borderColor: "#D4AF37" }} // Gold Border
       >
         {/* Background Watermark/Pattern Decor */}
@@ -89,8 +84,8 @@ export default function CertificateGenerator() {
             {/* {data.name || "Your Name Here"} */}
             <AutoScalingText
                 text={data.name} 
-                maxWidth={650} // Set the max width the name can take
-                className="text-6xl font-bold font-serif text-blue-900 px-4"
+                maxWidth={600} // Set the max width the name can take
+                className="text-6xl font-bold font-serif text-blue-900 px-2"
             />
           </div>
           <p className="text-xl">has successfully completed the course</p>

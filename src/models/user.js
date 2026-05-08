@@ -5,36 +5,27 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  userId: { //user wallet address
+    type: String,
+    required: true,
+  },
   img: {
     type: String,
   },
   public_id: {
     type: String,
   },
-  password: {
-    type: String,
-  },
-  email: {
-    type: String,
-  },
-  id_verified: {
-    type: Boolean,
-    default: false,
-  },
-  meta_data: {
-    type: String,
-    default: "",
-  },
-  tokens: {
+  // array of Course{ 
+      // coveredLessons: array of materials_index covered in the course,
+      // claimed: boolean if certificate is claimed
+      //instructor: instructorAddy, instructorCourseIndex
+  // }
+  courses: { 
     type: Array,
-    default: [],
-  },
-  banks: {
-    type: Array, // arr of objects 
     default: [],
   },
 });
 
 UserSchema.set("timestamps", true);
 
-export default mongoose.models.users || mongoose.model('users', UserSchema);
+export default mongoose.models.openMind_users || mongoose.model('openMind_users', UserSchema);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { 
   MdPlayCircleOutline, 
   MdOutlineAccessTime, 
@@ -17,14 +17,23 @@ import { useOpenMind } from '@/hooks/useOpenMind';
 import Link from 'next/link';
 import { PublicKey, SystemProgram, Transaction } from '@solana/web3.js';
 import { GoClockFill } from 'react-icons/go';
+import CertificateModal from '@/components/modals/certificateModal';
+import CertificateGenerator from '@/components/account/certificate';
+import { useRouter } from 'next/navigation';
+import { formatDuration, getVideoDuration } from '@/utils/helpers';
+import { getUser, updateUser } from '@/app/actions/user';
+import { getTest } from '@/app/actions/test';
 
 const CourseP = ({ id } : { id: string }) => {
 
+  const router = useRouter();
   const [openSection, setOpenSection] = useState<number | null>(0);
   const [loading, setLoading] = useState(true);
   const [certifying, setCertifying] = useState(false);
   const [enrolling, setEnrolling] = useState(false);
   const [error, setError] = useState(false);
+  const [enrolled, setEnrolled] = useState(false);
+  const [completed, setCompleted] = useState<any>({});
   const { 
     getProgram, userPublicKey, getProvider, 
     getUserPDA, getCourseMaterialPDA, getInstructorCreatedCoursePDA, 
@@ -34,6 +43,8 @@ const CourseP = ({ id } : { id: string }) => {
   const [instructor, setInstructor] = useState<string>("");
   const [courseIndex, setCourseIndex] = useState(0);
   const [chapters, setChapters] = useState<any[]>([]);
+  const [openModal, setOpenModal] = useState(false);
+  const [testCreated, setTestCreated] = useState(false);
 
   const curriculum = [
     { title: "Introduction to Python", lessons: 5, duration: "45m" },
@@ -48,28 +59,40 @@ const CourseP = ({ id } : { id: string }) => {
         const program = getProgram();
         if (!program || !userPublicKey) {
             throw new Error("Wallet not connected or Program failed to load.");
-            return;
         }
 
         const [instructorAddy, cI] = id.split("_x_");
         setInstructor(instructorAddy);
         const course_index = Number(cI);
         setCourseIndex(course_index);
-        console.log("ccc", instructorAddy, cI);
 
-        // const userPDA = getUserPDA();
-        // const user = await (program.account as any).user.fetch(userPDA);
+        const userPDA = getUserPDA();
+        const user = await (program.account as any).user.fetch(userPDA);
         
         const instructorCreated = getInstructorCreatedCoursePDA(instructorAddy, course_index);
         const course = await (program.account as any).course.fetch(instructorCreated);
+        course.instructor = course.instructor.toString(); 
         console.log("course", course);
         setCourse(course);
+
+        const test = await getTest(course.testId);
+        if(test?.test?.courseName) {
+          setTestCreated(true);
+        }
 
         const materials = [];
         
         for(let j = 0; j < course.materialCount; j++) {
           const matPDA = getCourseMaterialPDA(course_index, j);
           const material = await (program.account as any).courseMaterial.fetch(matPDA);
+          const vidDurationRes: number | string = await getVideoDuration(material.fileUri);
+          let duration = "";
+          if(typeof vidDurationRes !== "string") {
+            duration = formatDuration(vidDurationRes);
+          } else {
+            duration = "--:--";
+          }
+          material.duration = duration;
           materials.push({ ...material, materialIndex: j, instructor: material.instructor.toString() });
         }
 
@@ -89,7 +112,29 @@ const CourseP = ({ id } : { id: string }) => {
           i = j - 1;
         }
         setChapters(chaptersClone);
-        console.log("cf", chaptersClone);
+
+
+        for(let course_index = 0; course_index < user.enrolledCoursesCount; course_index++) {
+            const userEnrolled = getUserEnrolledCoursesPDA(course_index);
+            const course_ = await (program.account as any).userCourse.fetch(userEnrolled);
+            
+            if(course_.instructor === instructorAddy && course_.instructorCourseIndex === cI) {
+              setEnrolled(true);
+
+              // find if user has completed course
+              const userDb = await getUser(userPublicKey.toString());
+              const userCourse = userDb.courses.find((user_course_: any) => {
+                return user_course_.instructor === instructorAddy && user_course_.instructorCourseIndex === course_index;
+              });
+              setCompleted({
+                coveredAllLessons: userCourse.coveredLessons.length >= course_.materialCount,
+                claimedCertificate: userCourse.claimed, testScore: userCourse.testScore
+              });
+
+              break;
+            }
+        }
+
 
         setLoading(false);
       } catch (err) {
@@ -104,6 +149,7 @@ const CourseP = ({ id } : { id: string }) => {
     }, []);
 
     const getCertificate = async () => {
+
       if(certifying) return;
       setCertifying(true);
       try {
@@ -184,14 +230,13 @@ const CourseP = ({ id } : { id: string }) => {
       if(enrolling) return;
       setEnrolling(true);
       try {
-              
+        
+
         const program = getProgram();
         if (!program || !userPublicKey) {
             throw new Error("Wallet not connected or Program failed to load.");
             return;
         }
-
-        const provider = getProvider();
 
         const userPDA = getUserPDA();
         const user = await (program.account as any).user.fetch(userPDA);
@@ -217,12 +262,54 @@ const CourseP = ({ id } : { id: string }) => {
             systemProgram: SystemProgram.programId,
         } as any).rpc();
 
+
+        // initialize tracking of user watching/progress in course
+        const userId = userPublicKey.toString();
+        const userDb = await getUser(userId);
+        console.log("user", userDb.user);
+        const userCoursesDb = userDb.user.courses;
+        const enrolledCourse = userCoursesDb.find((user_course_: any) => {
+          return user_course_.instructor === instructor && user_course_.instructorCourseIndex === courseIndex;
+        });
+        if(!enrolledCourse) {
+          const newUserCourse_ = {
+            coveredLessons: [], claimed: false,
+            instructor, instructorCourseIndex: courseIndex
+          };
+          userCoursesDb.push(newUserCourse_);
+          const _r = await updateUser(userPublicKey.toString(), { data: { courses: userCoursesDb } });
+        }
+        setEnrolled(true);
         setEnrolling(false);
       } catch (err) {
         console.log("enroll error", err);
         setEnrolling(false);
       }
-    }
+    };
+
+    const createNewTest = () => {
+      router.push(`/create/${courseIndex}_x_${course.courseName}_x_${course.testId}`);
+    };
+
+    const btnRef = [
+      {name: null, fn: null},
+      {name: "Enroll", fn: enrollCourse}, 
+      {name: "Get Certificate", fn: getCertificate}, 
+      {name: "Update Course Test", fn: createNewTest}
+    ];
+
+    const btnRefIndex = useMemo(() => {
+      if(loading || !userPublicKey) return 0;
+      else if(userPublicKey.toString() === instructor) {
+        if(!testCreated)return 3;
+        else return 0;
+      } else if(completed.coveredAllLessons) {
+        if(completed.testScore > 70) return 2; 
+        else return 0;
+      }
+      else if(!enrolled) return 1;
+      else return 0;
+    }, [userPublicKey, loading, enrolled, instructor, completed?.completedLessons]);
 
   return (
     <div className="w-full bg-white font-sans text-slate-900">
@@ -234,7 +321,7 @@ const CourseP = ({ id } : { id: string }) => {
         :
         <>
         <section className="w-full bg-[#1c1d1f] text-white py-12 md:py-20 px-6">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-12">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-y-12">
           <div className="lg:col-span-2 space-y-6">
             
             <h1 className="text-3xl md:text-5xl font-black leading-tight">
@@ -244,7 +331,7 @@ const CourseP = ({ id } : { id: string }) => {
               {course.courseDescription}
             </p>
 
-            <div className="flex flex-wrap items-center gap-y-4 text-sm">
+            <div className="flex items-center text-sm mt-17">
               <div className="flex items-center gap-2 bg-amber-400 text-black px-2 py-1 rounded font-bold">
                 <MdStar className="w-4 h-4" />
                 <span className="text-base">{course.courseLevels}</span>
@@ -289,10 +376,10 @@ const CourseP = ({ id } : { id: string }) => {
                   <span className="text-emerald-600 font-bold text-lg">SOL</span>
                 </div>
 
-                {course.instructor !== userPublicKey?.toString() && <div className="space-y-3">
+                {btnRef[btnRefIndex]?.name && <div className="space-y-3">
                   <button className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-xl transition-all shadow-lg shadow-indigo-100"
-                  onClick={enrollCourse}>
-                    Enroll Now
+                  onClick={btnRef[btnRefIndex].fn}>
+                    {btnRef[btnRefIndex].name}
                   </button>
                 </div>}
 
@@ -321,11 +408,12 @@ const CourseP = ({ id } : { id: string }) => {
 
       <main className="max-w-7xl mx-auto px-6 py-12 grid grid-cols-1 lg:grid-cols-3 gap-12">
         <div className="lg:col-span-2 space-y-12">
-
+{/* 
         <button className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-xl transition-all shadow-lg shadow-indigo-100"
-        onClick={getCertificate}>
+        // onClick={getCertificate}>
+        onClick={enrollCourse}>
           Get certificate
-        </button>
+        </button> */}
           
           
           <section className="p-8 border border-slate-200 rounded-2xl bg-slate-50/50">
@@ -348,7 +436,7 @@ const CourseP = ({ id } : { id: string }) => {
             </div>
 
             <div className="border border-slate-200 rounded-2xl overflow-hidden">
-              {chapters.map((sections, i) => (
+              {chapters.map((lessons, i) => (
                 <div key={`chapters-${i}`} className="border-b border-slate-200 last:border-0">
                   <button 
                     onClick={() => setOpenSection(openSection === i ? null : i)}
@@ -356,22 +444,22 @@ const CourseP = ({ id } : { id: string }) => {
                   >
                     <div className="flex items-center gap-3">
                       <MdKeyboardArrowDown className={`w-6 h-6 transition-transform ${openSection === i ? 'rotate-180' : ''}`} />
-                      <span className="font-bold text-left">{sections[0].chapter}</span>
+                      <span className="font-bold text-left">{lessons[0].chapter}</span>
                     </div>
                     {/* <span className="hidden sm:block text-xs text-slate-400">{section.lessons} lectures • {section.duration}</span> */}
                   </button>
                   
                   {openSection === i && (
                     <div className="p-5 bg-slate-50 space-y-4 animate-in slide-in-from-top-2 duration-200">
-                      {sections.map((l: any, idx: number) => (
+                      {lessons.map((lesson: any, idx: number) => (
                         <Link 
-                        href={`/courses/${course.instructor}_x_${course.index}_x_${l.materialIndex}`} 
+                        href={`/course/${instructor}_x_${courseIndex}_x_${lesson.materialIndex}`} 
                         key={`course-sections-${idx}`} className="flex items-center justify-between text-sm">
                           <div className="flex items-center gap-3">
                             <MdPlayCircleOutline className="text-slate-400" />
-                            <span className="text-slate-600">{l.materialTitle}</span>
+                            <span className="text-slate-600">{lesson.materialTitle}</span>
                           </div>
-                          {/* <span className="text-slate-400 font-mono text-xs">12:45</span> */}
+                          <span className="text-slate-400 font-mono text-xs">{lesson.duration}</span>
                         </Link>
                       ))}
                     </div>
@@ -394,6 +482,13 @@ const CourseP = ({ id } : { id: string }) => {
       </main>
     </>
     }
+
+    <CertificateModal 
+      isOpen={openModal} onClose={() => setOpenModal(false)}
+      title='Certificate' 
+    >
+      <CertificateGenerator />
+    </CertificateModal>
     </div>
   );
 };

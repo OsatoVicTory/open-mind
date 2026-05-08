@@ -140,7 +140,7 @@ export default function CoursesPage() {
       const srch = search.toLowerCase();
       const res = courses.filter(course => course.courseName.toLowerCase().startsWith(srch));
       setDisplayedCourses(res);
-    }, [search]);
+    }, [search, loading, courses.length]);
 
     return (
         <div className="flex w-full min-h-screen bg-white">
@@ -350,7 +350,7 @@ export default function CoursesPage() {
     {/* Course Grid */}
     <div className="p-6">
       {
-        !loading ?
+        loading ?
         <PageLoader />
         :
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

@@ -9,7 +9,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AiOutlineClose } from "react-icons/ai";
 import { IoFilterSharp } from "react-icons/io5";
 import { RiAccountPinBoxLine, RiApps2AddFill, RiMedalLine } from "react-icons/ri";
-import logo from "@/assets/python-course.png";
 import { SlSettings } from "react-icons/sl";
 import { AccountCertificates, AccountCourses } from "@/components/account";
 import { AccountSettings } from "@/components/account/settings";
@@ -17,6 +16,8 @@ import { useOpenMind } from "@/hooks/useOpenMind";
 import { useReadContract } from "thirdweb/react";
 import { PiCertificate } from "react-icons/pi";
 import CertificateGenerator from "@/components/account/certificate";
+import CertificateModal from "@/components/modals/certificateModal";
+import CertificateViewer from "@/components/account/certificateView";
 
 export default function AccountPage() {
 
@@ -37,20 +38,9 @@ export default function AccountPage() {
     const [certificates, setCertificates] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
-
-    // const courses = Array(20).fill(0). map((_, i) => {
-    //     const mul = (i && i%3 === 0) ? -1.0 : 1.0;
-    //     const [name, price, total_supply, img, public_id, creator_account_id, meta_data, one_day_volume] = [
-    //         `Agrow-${i}`, 0.00102, 900000, "", "", "", "", 10000
-    //     ];
-    //     const [one_hr, one_day, thirty_days] = [
-    //         {change: 3.21 * mul }, { change: 41.87 * mul }, { change: 125.89 * mul }
-    //     ];
-    //     return { 
-    //         _id: i, img: logo, name: "100 Days of Code: The Complete python bootcamp", 
-    //         instructor: "Dr Angela Yen - Chief Instructor", price: "$35"
-    //     };
-    // });
+    const [openModal, setOpenModal] = useState(false);
+    const [selectedCert, setSelectedCert] = useState<any>({});
+    
 
     const routes = [
         {icon: RiApps2AddFill, name: "Created Courses"},
@@ -99,8 +89,17 @@ export default function AccountPage() {
                 const userEnrolled = getUserCertificatePDA(userPublicKey, course_index);
                 const userCert = await (program.account as any).userCertificate.fetch(userEnrolled);
                 console.log("userCert", course_index, userCert);
-                const certPda = getCertificatePDA(userCert.issuer.toString(), userCert.trackingId);
+                const instructor = userCert.issuer.toString();
+                const certPda = getCertificatePDA(instructor, userCert.trackingId);
                 const cert = await (program.account as any).certificate.fetch(certPda);
+                const timeInSecs = cert.issuedAt.toNumber();//(u64) to get issuance date
+                cert.issuedAt = String(new Date(timeInSecs * 1000)).slice(4, 15);
+
+                const instructorCreatedPDA = getInstructorCreatedCoursePDA(instructor, cert.courseIndex);
+                const course = await (program.account as any).course.fetch(instructorCreatedPDA);
+                cert.instructorName = course.instructorName;
+                cert.courseName = course.courseName;
+                cert.instructor = instructor; 
                 certificates_.push(cert);
             }
 
@@ -210,7 +209,11 @@ export default function AccountPage() {
                             : (
                                 route === routes[2].name 
                                 ?
-                                <AccountCertificates headerName={"Certificates"} certificates={certificates} setShowFilter={setShowFilter} />
+                                <AccountCertificates headerName={"Certificates"} certificates={certificates} 
+                                setShowFilter={setShowFilter} setSelectedCert={(val: any) => {
+                                    setSelectedCert(val);
+                                    setOpenModal(true);
+                                }} />
                                 :
                                 <AccountSettings headerName={"Account Settings"} setShowFilter={setShowFilter} />
                             )
@@ -218,8 +221,14 @@ export default function AccountPage() {
                     )
                 }
 
-                <CertificateGenerator />
             </main>
+
+            <CertificateModal 
+            isOpen={openModal} onClose={() => setOpenModal(false)}
+            title='Certificate' 
+            >
+                <CertificateViewer selectedCert={selectedCert} />
+            </CertificateModal>
 
         </div>
     )

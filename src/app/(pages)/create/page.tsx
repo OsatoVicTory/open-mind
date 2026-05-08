@@ -175,6 +175,8 @@ const CreateCourse = () => {
 
         await txWait(courseTx);
 
+        alert("Course created. Now adding lesson materials...");
+
         await new Promise((res) => setTimeout(res, 2000));
         
         

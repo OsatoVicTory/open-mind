@@ -15,6 +15,8 @@ import { ClusterSelect } from "@/components/cluster-select";
 import { WalletButton } from "@/components/wallet-button";
 import { useCluster } from "@/components/cluster-context";
 import { useRouter } from "next/navigation";
+import { createUser } from "./actions/user";
+import { imageToBase64 } from "@/utils/helpers";
 // import { THIRD_WEB_ID, THIRD_WEB_SECRET, uploadToIpfs } from "@/utils/helpers";
 // import { MediaRenderer } from "thirdweb/react";
 // import { createThirdwebClient } from "thirdweb";
@@ -102,6 +104,23 @@ export default function Home() {
   //         secretKey: THIRD_WEB_SECRET,
   //   });
 
+  
+
+    const createUserDb = async () => {
+      try {
+        const img = await imageToBase64(file[0]);
+        const user = await createUser({ 
+          data: {
+            name: "Tory", userId: address,
+          }, 
+          img, 
+        });
+        console.log(user);
+      } catch (err) {
+        console.log(err);
+      }
+    }
+
   return (
     <div className="relative min-h-screen bg-background text-foreground">
       <GridBackground />
@@ -144,6 +163,11 @@ export default function Home() {
                     }} />
                 </label>
                 <button onClick={upload}>Upload to IPFS</button>
+
+                <button className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-xl transition-all shadow-lg shadow-indigo-100"
+                onClick={createUserDb}>
+                  Create user
+                </button>
               </div>
 
               {img && <img
